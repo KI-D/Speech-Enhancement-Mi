@@ -1,0 +1,213 @@
+##################################################################BASE############################################################################### 
+config:
+    seed: 0
+    root: "./"
+    DEBUG: False
+    gpu: [4,5,6,7]
+    spk_num: &spk_num 1
+    num_mic: &num_mic 3
+    sample_rate: &sample_rate 16000
+    max_grad_norm: 5
+    max_length: 60000
+    avg_step: 100
+    checkpoint_dir: "./modules"
+    log_dir: "./log"
+
+
+# dataset:
+#     train:
+#         asr: ["./data/train-clean-100.csv","./data/train-clean-360.csv","./data/train-other-500.csv"]
+#         sp: ["./data/2mix/mixture_train-100_mix_both.csv","./data/2mix/mixture_train-360_mix_both.csv"]
+#         noise: ["./data/train_noise.csv"]
+#         rir: ["./data/train_rir.csv"]
+#     dev:
+#         asr: ["./data/dev-clean.csv"]
+#         sp: ["./data/2mix/mixture_dev_mix_both.csv"]
+#         noise: ["./data/dev_noise.csv"]
+#         rir: ["./data/dev_rir.csv"]
+#     test:
+#         asr: ["./data/test-clean.csv"]
+#         sp: ["./data/2mix/mixture_test_mix_both.csv"]
+#         noise: ["./data/test_noise.csv"]
+#         rir: ["./data/test_rir.csv"]
+
+dataset:
+    train:
+        clean: ["./Chinese_data/final_train.csv"]
+        noise: ["./Chinese_data/final_train_noise.csv"]
+        rir: ["./Chinese_data/final_train_rir.csv"]
+    dev:
+        clean: ["./Chinese_data/final_dev.csv"]
+        noise: ["./Chinese_data/final_dev_noise.csv"]
+        rir: ["./Chinese_data/final_dev_rir.csv"]
+    test:
+        clean: ["./Chinese_data/final_test.csv"]
+        noise: ["./Chinese_data/DNS_test_noise.csv"]
+        rir: ["./Chinese_data/DNS_test_rir.csv"]
+
+augment:
+    addnoise:
+        mix_prob: 1.0
+        snr_low: -5
+        snr_high: 25
+    addreverb:
+        reverb_prob: 1.0
+        rir_scale_factor: 1.0
+    perturb:
+        orig_freq: *sample_rate
+        perturb_prob: 0.8
+    freqmask:
+        drop_freq_low: 0.0001
+        drop_freq_high: 1.0
+        drop_count_low: 1
+        drop_count_high: 4
+        drop_width: 0.05
+        drop_prob: 0.5
+    timemask:
+        drop_length_low: 100
+        drop_length_high: 500
+        drop_count_low_rate: 0.00002
+        drop_count_high_rate: 0.0002
+        drop_prob: 0.5
+    clip:
+        clip_low: 0.5
+        clip_high: 1
+        clip_prob: 0.5
+    multichannel: 
+        room_limit: [[3,3,2.5], [4,5,3]]
+        t60_limit: [0.2, 1.0]
+        #t60_limit: [0.01, 0.1]
+        beta_limit: [[0.5,0.5,0.5,0.5,0.5,0.5], [1.0,1.0,1.0,1.0,1.0,1.0]]
+        array_limit: [[0.1, 0.1, 0.2], [0.9, 0.9, 0.7]]
+        mic_limit: [[0.06, 0.06, 0.06], [0.15, 0.15, 0.15]]
+        source_limit: [[0.0, 0.0, 0.3], [1.0, 1.0, 0.7]]
+        num_src: *spk_num
+        num_mic: *num_mic
+        fs: *sample_rate
+    
+##################################################################MODEL###############################################################################
+model:
+    batch_size: &batch_size 1
+
+denoise:
+    batch_size: *batch_size
+    model_dim: 128
+    num_mic: *num_mic
+    num_epoch: 80
+    gradient_accumulation: 2
+    lr: 0.0003
+    n_warm_steps: 20000
+    num_workers: 0
+
+FaSNet_TAC:
+    enc_dim: 64
+    feature_dim: 64
+    hidden_dim: 128
+    layer: 4
+    segment_size: 50
+    model_type: 'Sepformer_TAC'
+    t_numlayers: 3
+    nhead: 8
+    ffn: 128
+    nspk: *spk_num
+    win_len: 4
+    context_len: 16
+    sr: *sample_rate
+
+SNNet:
+    n_mics: *num_mic
+    model_dim: 32
+    time_dim: 51
+    freq_dim: 51
+    num_blocks: 2
+    segment_length: 8000
+    batch_size: *batch_size 
+    sample_rate: *sample_rate
+    win_length: 20
+    hop_length: 10
+    n_fft: 320
+
+# FullSubNet:
+#     num_freqs: 241
+#     look_ahead: 0
+#     sequence_model: "LSTM"
+#     fb_num_neighbors: 0
+#     sb_num_neighbors: 15
+#     fb_output_activate_function: "ReLU"
+#     sb_output_activate_function: False
+#     fb_model_hidden_size: 512
+#     sb_model_hidden_size: 384
+#     num_mics: *num_mic
+#     norm_type: "offline_laplace_norm"
+#     num_groups_in_drop_band: 2
+#     num_layers: 2
+#     weight_init: False
+#     sample_rate: 16000
+#     segment_length: 960
+#     win_length: 30 
+#     hop_length: 15
+#     n_fft: 480
+
+FullSubNet:
+    num_freqs: 201
+    look_ahead: 0
+    sequence_model: "LSTM"
+    fb_num_neighbors: 0
+    sb_num_neighbors: 15
+    fb_output_activate_function: "ReLU"
+    sb_output_activate_function: False
+    fb_model_hidden_size: 512
+    sb_model_hidden_size: 384
+    num_mics: *num_mic
+    norm_type: "offline_laplace_norm"
+    num_groups_in_drop_band: 2
+    num_layers: 2
+    weight_init: False
+    sample_rate: 16000
+    segment_length: 3200
+    win_length: 25
+    hop_length: 10
+    n_fft: 400
+
+GTSA:
+    num_mics: *num_mic
+    num_freqs: 201
+    segment_length: 3200
+    num_layers: 5
+    num_heads: 3
+    model_dim: 201
+    fn_dim: 512   
+    maxlen: 630
+    dropout: 0.0
+    sample_rate: 16000
+    win_length: 25
+    hop_length: 10
+    n_fft: 400
+
+TemporalCRN:
+    num_channels: [16, 32, 64, 128]
+    num_freqs: 201
+    hidden: 512
+    segment_length: 3200
+    num_layers: 2
+    num_inputs: 3
+    kernel_size: 3
+    dropout: 0.0
+    sample_rate: 16000
+    win_length: 25
+    hop_length: 10
+    n_fft: 400
+
+Complex_TemporalCRN:
+    num_channels: [8, 16, 32, 64]
+    num_freqs: 201
+    hidden: 256
+    segment_length: 3200
+    num_layers: 1
+    num_inputs: 3
+    kernel_size: 3
+    dropout: 0.0
+    sample_rate: 16000
+    win_length: 25
+    hop_length: 10
+    n_fft: 400
