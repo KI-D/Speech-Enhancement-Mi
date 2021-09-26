@@ -16,7 +16,7 @@ DEBUG = False
 MAX_AMP = 0.95
 
 class LibriPartyDataset(Dataset):
-    def __init__(self):
+    def __init__(self, snr_low=None, snr_high=None):
         super(Dataset).__init__()
         global DEBUG
         with open('./config.yaml','r',encoding='utf-8') as f:
@@ -28,6 +28,9 @@ class LibriPartyDataset(Dataset):
         
         self.spk_num = config['config']['spk_num']
         DEBUG = config['config']['DEBUG']
+        if snr_low is not None:
+            self.config['augment']['addnoise']['snr_low'] = snr_low
+            self.config['augment']['addnoise']['snr_high'] = snr_high
 
         #Read csv
         self.all_csv = self.get_csv(config['dataset'])

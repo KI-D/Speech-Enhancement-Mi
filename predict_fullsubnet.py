@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 import yaml
 import numpy as np
 import soundfile as sf
-import speechmetrics
+#import speechmetrics
 from utility import *
 from metrics import *
 
@@ -32,7 +32,7 @@ def predict(args):
     path = os.path.join(stage_dir, name+'.pth')
     model.load_state_dict(torch.load(path))
 
-    data = LibriPartyDataset()
+    data = LibriPartyDataset(snr_low=0, snr_high=25)
     data.set_attribute('test', augment = False, perturb=False)
     dataloader = DataLoader(data, batch_size = 1, shuffle=True, num_workers=num_workers)
     index = 0

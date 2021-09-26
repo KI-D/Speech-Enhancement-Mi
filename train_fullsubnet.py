@@ -72,18 +72,18 @@ class Processor(object):
             path = os.path.join(stage_dir, name+'.pth')
             torch.save(getattr(self, name).state_dict(), path)
     
-    def load_modules(self, stage_name, module_names):
+    def load_modules(self, stage_name, module_names, resume):
         if stage_name == "fronzen":
             stage_dir = "fronzen_modules"
         else:
-            stage_dir = os.path.join(self.config['config']['checkpoint_dir'], stage_name, self.config['user_defined_name'])
+            stage_dir = os.path.join(self.config['config']['checkpoint_dir'], stage_name, resume)
         
         for name in module_names:
             path = os.path.join(stage_dir, name+'.pth')
             getattr(self, name).load_state_dict(torch.load(path), strict=False)
 
 
-    def train(self, stage, resume = False):
+    def train(self, stage, resume = None):
         stage_name = self.stage2str[stage]
         num_epoch = self.config[stage_name]['num_epoch']
         if stage == 0:
@@ -177,7 +177,7 @@ class Processor(object):
         return history
 
 
-    def set_denoise(self, stage, resume = False):
+    def set_denoise(self, stage, resume = None):
         # module_names MUST have the same order with FullSubNet' parameters
         module_names = ["FullSubNet"]
         frozen_names = []
@@ -196,8 +196,8 @@ class Processor(object):
         # #torch.cuda.set_device(args.local_rank)
         # model = torch.nn.parallel.DistributedDataParallel(model)
         # ######################################
-        if resume:
-            self.load_modules(stage_name, module_names)
+        if resume is not None:
+            self.load_modules(stage_name, module_names, resume)
         scaler = GradScaler()
         optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr = lr, betas = (0.9,0.999))
         optimizer.zero_grad()
@@ -213,7 +213,7 @@ if __name__ == '__main__':
     parser.add_argument('config_path', type=str, help='Config path of "*.yaml"')
     parser.add_argument('--gpu', type=int, nargs ='+', help='GPU available, such as "0 1"')
     parser.add_argument('--stage', default=0, type=int, help='Training Stage, 0 for denoise')
-    parser.add_argument('--resume', default=False, type=bool, help='Saved chekpoints path to continue to train')
+    parser.add_argument('--resume', default=None, type=str, help='Saved chekpoints path to continue to train')
     parser.add_argument('--user_defined_name', default='model', type=str, help='User defined name for save log and checkpoint')
     parser.add_argument('--local_rank', default=-1, type=int, help='node rank for distributed training')
     args = parser.parse_args()
