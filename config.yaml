@@ -173,16 +173,32 @@ GTSA:
     num_mics: *num_mic
     num_freqs: 201
     segment_length: 3200
-    num_layers: 5
-    num_heads: 3
+    num_layers: 4
+    num_heads: 4
     model_dim: 201
-    fn_dim: 512   
-    maxlen: 630
+    fn_dim: 1024   
+    maxlen: 600
     dropout: 0.0
     sample_rate: 16000
     win_length: 25
     hop_length: 10
     n_fft: 400
+
+
+# GTSA:
+#     num_mics: *num_mic
+#     num_freqs: 201
+#     segment_length: 3200
+#     num_layers: 6
+#     num_heads: 4
+#     time_dim: 21
+#     fn_dim: 1024   
+#     maxlen: 210
+#     dropout: 0.0
+#     sample_rate: 16000
+#     win_length: 25
+#     hop_length: 10
+#     n_fft: 400
 
 TemporalCRN:
     num_channels: [16, 32, 64, 128]
@@ -204,6 +220,20 @@ Complex_TemporalCRN:
     hidden: 256
     segment_length: 3200
     num_layers: 1
+    num_inputs: 3
+    kernel_size: 3
+    dropout: 0.0
+    sample_rate: 16000
+    win_length: 25
+    hop_length: 10
+    n_fft: 400
+
+GeneralBeamformer:
+    num_channels: [128, 128, 128, 128]
+    num_freqs: 201
+    hidden: 256
+    segment_length: 3200
+    num_layers: 2
     num_inputs: 3
     kernel_size: 3
     dropout: 0.0
