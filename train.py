@@ -142,6 +142,7 @@ class Processor(object):
                 self.optimizer = optimizer
                 self.scheduler = scheduler
                 self.scaler = scaler
+                self.save_modules(stage_name, [])
         
 
 
