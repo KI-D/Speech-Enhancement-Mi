@@ -35,7 +35,7 @@ class Processor(object):
         self.init_seed(config['config']['seed'])
         self.init_modules()
 
-        self.epoch = 0
+        self.epoch = -1
         self.train_step = 0
         self.dev_step = 0
         self.last_loss = 1e8
@@ -129,7 +129,7 @@ class Processor(object):
             history = {"train_step":self.train_step, "dev_step":self.dev_step, "epoch":self.epoch,  "train_loss":0.0, "train_logmse":0.0, "train_sisnr":0.0, 
                     "dev_last_loss":self.last_loss, "dev_loss":0.0, "dev_logmse":0.0, "dev_sisnr":0.0}
 
-            for epoch in range(self.epoch, num_epoch):
+            for epoch in range(self.epoch+1, num_epoch):
                 history["epoch"] = epoch
                 history, optimizer, scheduler, scaler = self.denoise(model, stage, "train", self.optimizer, self.scheduler, self.scaler, history)
                 self.writer.flush()
