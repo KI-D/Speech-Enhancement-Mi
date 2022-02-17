@@ -54,6 +54,7 @@ Test:   CUDA_VISIBLE_DEVICES=1,2 python predict.py ./config.yaml TemporalCRN --u
 增加了predict_distillation.py, 用于测试蒸馏结果, 也可以测量化结果。
 
 **CRN_ELU 测试结果：SISDR: 20.52，	STOI: 0.9244， PESQ: 2.7129, 参数量6.16MB**
+
 **distillation CRN_ELU 测试结果：SISDR: 20.57， STOI: 0.9267， PESQ: 2.7373, 参数量0.81MB**
 
 # 3. TCN:
