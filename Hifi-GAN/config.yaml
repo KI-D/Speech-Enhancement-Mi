@@ -1,0 +1,146 @@
+##################################################################BASE############################################################################### 
+config:
+    seed: 0
+    root: "./"
+    DEBUG: False
+    gpu: [4,5,6,7]
+    spk_num: &spk_num 1
+    num_mic: &num_mic 3
+    sample_rate: &sample_rate 16000
+    max_grad_norm: 5
+    max_length: 60000
+    avg_step: 200
+    checkpoint_dir: "./modules"
+    log_dir: "./log"
+
+
+# dataset:
+#     train:
+#         asr: ["./data/train-clean-100.csv","./data/train-clean-360.csv","./data/train-other-500.csv"]
+#         sp: ["./data/2mix/mixture_train-100_mix_both.csv","./data/2mix/mixture_train-360_mix_both.csv"]
+#         noise: ["./data/train_noise.csv"]
+#         rir: ["./data/train_rir.csv"]
+#     dev:
+#         asr: ["./data/dev-clean.csv"]
+#         sp: ["./data/2mix/mixture_dev_mix_both.csv"]
+#         noise: ["./data/dev_noise.csv"]
+#         rir: ["./data/dev_rir.csv"]
+#     test:
+#         asr: ["./data/test-clean.csv"]
+#         sp: ["./data/2mix/mixture_test_mix_both.csv"]
+#         noise: ["./data/test_noise.csv"]
+#         rir: ["./data/test_rir.csv"]
+
+dataset:
+    train:
+        clean: ["/home/xianghaoran/fasnet_tac/Chinese_data/final_train.csv"]
+        noise: ["/home/xianghaoran/fasnet_tac/Chinese_data/final_train_noise.csv"]
+        rir: ["/home/xianghaoran/fasnet_tac/Chinese_data/final_train_rir.csv"]
+    dev:
+        clean: ["/home/xianghaoran/fasnet_tac/Chinese_data/final_dev.csv"]
+        noise: ["/home/xianghaoran/fasnet_tac/Chinese_data/final_dev_noise.csv"]
+        rir: ["/home/xianghaoran/fasnet_tac/Chinese_data/final_dev_rir.csv"]
+    test:
+        clean: ["/home/xianghaoran/fasnet_tac/Chinese_data/final_test.csv"]
+        noise: ["/home/xianghaoran/fasnet_tac/Chinese_data/DNS_test_noise.csv"]
+        rir: ["/home/xianghaoran/fasnet_tac/Chinese_data/DNS_test_rir.csv"]
+
+augment:
+    addnoise:
+        mix_prob: 1.0
+        snr_low: -5
+        snr_high: 25
+    addreverb:
+        reverb_prob: 1.0
+        rir_scale_factor: 1.0
+    perturb:
+        orig_freq: *sample_rate
+        perturb_prob: 0.8
+    freqmask:
+        drop_freq_low: 0.0001
+        drop_freq_high: 1.0
+        drop_count_low: 1
+        drop_count_high: 4
+        drop_width: 0.05
+        drop_prob: 0.5
+    timemask:
+        drop_length_low: 100
+        drop_length_high: 500
+        drop_count_low_rate: 0.00002
+        drop_count_high_rate: 0.0002
+        drop_prob: 0.5
+    clip:
+        clip_low: 0.5
+        clip_high: 1
+        clip_prob: 0.5
+    multichannel: 
+        room_limit: [[3,3,2.5], [4,5,3]]
+        t60_limit: [0.2, 1.0]
+        #t60_limit: [0.01, 1.0]
+        beta_limit: [[0.5,0.5,0.5,0.5,0.5,0.5], [1.0,1.0,1.0,1.0,1.0,1.0]]
+        array_limit: [[0.1, 0.1, 0.2], [0.9, 0.9, 0.7]]
+        mic_limit: [[0.06, 0.06, 0.06], [0.15, 0.15, 0.15]]
+        source_limit: [[0.0, 0.0, 0.3], [1.0, 1.0, 0.7]]
+        num_src: *spk_num
+        num_mic: *num_mic
+        fs: *sample_rate
+    
+##################################################################MODEL###############################################################################
+model:
+    batch_size: &batch_size 1
+
+stage1:
+    batch_size: *batch_size
+    num_mic: *num_mic
+    gradient_accumulation: 4
+    num_workers: 0
+    num_epoch: 80
+    lr: 0.001
+
+stage2:
+    batch_size: *batch_size
+    num_mic: *num_mic
+    gradient_accumulation: 2
+    num_workers: 0
+    num_epoch: 80
+    lr: 0.0001
+
+stage3:
+    batch_size: *batch_size
+    num_mic: *num_mic
+    gradient_accumulation: 1
+    num_workers: 0
+    num_epoch: 40
+    n_warm_steps: 2000
+    lr: 0.00001
+    lr_d: 0.001
+
+# Hifi_GAN:
+#     input_channel: *num_mic
+#     channel: 128
+#     sample_rate: *sample_rate
+#     nffts: [400, 800, 1600]
+#     n_mels: 80 
+#     num_layers: 10
+#     num_stacks: 2
+#     kernel_size: 3
+#     post_channel: 128
+#     post_layers: 12
+
+Hifi_GAN:
+    nffts: [400, 800, 1600]
+    n_mels: 80
+    num_channels: [16, 32, 64, 128]
+    num_freqs: 201
+    hidden: 512
+    segment_length: 3200
+    num_layers: 2
+    num_inputs: 3
+    kernel_size: 3
+    dropout: 0.0
+    sample_rate: 16000
+    win_length: 25
+    hop_length: 10
+    n_fft: 400
+
+
