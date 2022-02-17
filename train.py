@@ -83,7 +83,10 @@ class Processor(object):
         for name in module_names:
             path = os.path.join(stage_dir, name+'.pth')
             torch.save(getattr(self, name).state_dict(), path)
+<<<<<<< HEAD
         
+=======
+>>>>>>> 3831da130fb54a0106f2bf9c422790493dd6baf6
         path = os.path.join(stage_dir, 'optimizer.pth')
         torch.save(self.optimizer.state_dict(), path)
         if self.scheduler is not None:
@@ -159,7 +162,11 @@ class Processor(object):
         gradient_accumulation = config['gradient_accumulation']
 
         self.dataset.set_attribute(mode, augment = False)
+<<<<<<< HEAD
         self.dataset.init_seed(self.epoch+1)
+=======
+        self.dataset.init_seed(self.epoch)
+>>>>>>> 3831da130fb54a0106f2bf9c422790493dd6baf6
         self.dataset.buffer = []
         # ################################################################################
         # sampler = torch.utils.data.distributed.DistributedSampler(self.dataset)
