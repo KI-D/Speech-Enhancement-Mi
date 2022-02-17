@@ -47,7 +47,8 @@ Test:   CUDA_VISIBLE_DEVICES=1,2 python predict_fullsubnet.py ./config.yaml Full
 Train:  CUDA_VISIBLE_DEVICES=1,2 python train.py TemporalCRN ./config.yaml --user_defined_name "ANY NAME" [--resume "ANY NAME EXISTED"]
 
 Test:   CUDA_VISIBLE_DEVICES=1,2 python predict.py ./config.yaml TemporalCRN --user_defined_name crn
----------------------------------------------------------------------------------------------------------------------------------------
+
+
 增加了修改版CRN_ELU, 训练测试脚本与上面一致，但CRN.py直接被取代了。
 增加了distillation_crn.py, 用于对CRN蒸馏。
 增加了predict_distillation.py, 用于测试蒸馏结果, 也可以测量化结果。
@@ -76,7 +77,7 @@ Test:   CUDA_VISIBLE_DEVICES=1,2 python predict.py ./config.yaml GTSA --user_def
 
 像这种基于GAN的方法其实改的是训练策略，至于Generator其实可以是以上任意一种，目前以CRN为Generator,尝试按照原文使用MAE首先预训练两个阶段，之后再上Disciminator.
 当前预训练到了第二阶段。
----------------------------------------------------------------------------------------------------------------------------------------
+
 增加了HiFi-GAN代码，
 
 # 6. GeneralBeamformer:
