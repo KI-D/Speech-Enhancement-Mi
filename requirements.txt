@@ -2,7 +2,7 @@ torch_complex==0.2.1
 librosa
 matplotlib==3.4.3
 mir_eval==0.6
-numpy==1.19.2
+numpy==1.21.0
 pandas==1.3.0
 pyaml==21.8.3
 pypesq==1.2.4
@@ -14,7 +14,7 @@ seaborn
 speechbrain
 tensorboard==2.2.2
 tqdm==4.61.2
-numpy==1.19.2
+numpy==1.21.0
 
 
 
